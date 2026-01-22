@@ -1,6 +1,10 @@
-import { createConfig, http } from 'wagmi'
+import { createConfig, http, fallback } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
 import { injected } from 'wagmi/connectors'
+import rpcList from '../../rpc-list.json'
+
+// Create transports array from the centralized list
+const transports = rpcList.map(url => http(url))
 
 export const config = createConfig({
   chains: [sepolia],
@@ -8,6 +12,6 @@ export const config = createConfig({
     injected(),
   ],
   transports: {
-    [sepolia.id]: http(),
+    [sepolia.id]: fallback(transports),
   },
 })

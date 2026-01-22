@@ -95,14 +95,20 @@ function App() {
         
         if (isSuccess && latestWinner && latestWinner.toLowerCase() === address?.toLowerCase()) {
           setResult('correct')
+          // Play success sound once
+          s.success.currentTime = 0
           s.success.play().catch(console.error)
+          
           setTimeout(() => {
             setResult(null)
             setAnswer('')
           }, 3000)
         } else {
           setResult('wrong')
+          // Play error sound once
+          s.error.currentTime = 0
           s.error.play().catch(console.error)
+          
           setTimeout(() => {
             setResult(null)
             setAnswer('')

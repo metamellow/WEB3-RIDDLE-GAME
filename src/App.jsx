@@ -70,7 +70,22 @@ function App() {
   useEffect(() => {
     if (isActive === false && !isBotTriggering && riddle) {
       setIsBotTriggering(true)
-      fetch('/api/new-riddle').then(() => setTimeout(() => { refetchAll(); setIsBotTriggering(false); }, 5000))
+      fetch('/api/new-riddle')
+        .then(async (res) => {
+          if (!res.ok) {
+            const data = await res.json()
+            throw new Error(data.error || 'Failed to trigger new riddle')
+          }
+          console.log('New riddle triggered successfully')
+          setTimeout(() => {
+            refetchAll()
+            setIsBotTriggering(false)
+          }, 5000)
+        })
+        .catch((err) => {
+          console.error('Bot trigger error:', err.message)
+          setIsBotTriggering(false)
+        })
     }
   }, [isActive, riddle])
 

@@ -1,7 +1,8 @@
 import { createWalletClient, createPublicClient, http } from 'viem'
 import { sepolia } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
-import riddles from '../../riddles.json' with { type: 'json' }
+import fs from 'fs'
+import path from 'path'
 
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS
 const BOT_PRIVATE_KEY = process.env.BOT_PRIVATE_KEY
@@ -28,6 +29,14 @@ const ABI = [
 
 export async function handler() {
   try {
+    if (!CONTRACT_ADDRESS || !BOT_PRIVATE_KEY) {
+      throw new Error("Missing CONTRACT_ADDRESS or BOT_PRIVATE_KEY environment variables")
+    }
+
+    // Load riddles manually to avoid 'import with' compatibility issues
+    const riddlesPath = path.resolve(process.cwd(), 'riddles.json')
+    const riddles = JSON.parse(fs.readFileSync(riddlesPath, 'utf8'))
+
     const publicClient = createPublicClient({
       chain: sepolia,
       transport: http(RPC)
@@ -56,7 +65,7 @@ export async function handler() {
         name: 'RiddleSet',
         inputs: [{ type: 'string', name: 'riddle' }]
       },
-      fromBlock: 0n // Use BigInt for block numbers
+      fromBlock: 0n 
     })
 
     const nextIndex = logs.length % riddles.length
@@ -64,8 +73,10 @@ export async function handler() {
     
     console.log(`Setting next riddle (index ${nextIndex}): ${next.question}`)
 
-    // Set new riddle
-    const account = privateKeyToAccount(BOT_PRIVATE_KEY)
+    // Ensure private key is properly formatted
+    const formattedPK = BOT_PRIVATE_KEY.startsWith('0x') ? BOT_PRIVATE_KEY : `0x${BOT_PRIVATE_KEY}`
+    const account = privateKeyToAccount(formattedPK)
+    
     const walletClient = createWalletClient({
       account,
       chain: sepolia,
@@ -91,6 +102,7 @@ export async function handler() {
     }
 
   } catch (error) {
+    console.error("Bot function error:", error)
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message })

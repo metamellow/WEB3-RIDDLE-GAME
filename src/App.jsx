@@ -45,15 +45,23 @@ function App() {
         .then(async (res) => {
           const data = await res.json()
           console.log("Bot response:", data)
-          // Wait for indexing
+          
+          if (!res.ok) {
+            // If it failed, wait 10 seconds before allowing another trigger to prevent spam
+            setTimeout(() => setIsBotTriggering(false), 10000)
+            return
+          }
+
+          // If success, wait for indexing
           setTimeout(() => {
             refetchAll()
             setIsBotTriggering(false)
-          }, 3000)
+          }, 5000) // Increased to 5s for safety
         })
         .catch(err => {
           console.error("Bot error:", err)
-          setIsBotTriggering(false)
+          // Wait 10 seconds on network error too
+          setTimeout(() => setIsBotTriggering(false), 10000)
         })
     }
   }, [isActive, isBotTriggering, refetchAll, riddle])

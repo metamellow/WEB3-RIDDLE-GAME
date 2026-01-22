@@ -1,4 +1,4 @@
-# 🎮 ON-CHAIN RIDDLE GAME - Ultimate Build Guide
+# 🎮 ON-CHAIN RIDDLE GAME
 
 > **Style:** Yellow-on-black CRT terminal with mechanical flip-clock animation  
 > **Stack:** React + Vite + Wagmi + Hardhat + Netlify  
@@ -245,11 +245,9 @@ import { keccak256, toBytes } from 'viem'
 import fs from 'fs'
 
 const riddlesWithAnswers = [
-  { q: "I have cities, but no houses. I have mountains, but no trees. I have water, but 
-  no fish. What am I?", a: "MAP" },
+  { q: "I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?", a: "MAP" },
   { q: "The more you take, the more you leave behind. What am I?", a: "FOOTSTEPS" },
-  { q: "I speak without a mouth and hear without ears. I have no body, but I come alive 
-  with the wind. What am I?", a: "ECHO" },
+  { q: "I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?", a: "ECHO" },
   { q: "I'm tall when I'm young and short when I'm old. What am I?", a: "CANDLE" },
   { q: "What has hands but cannot clap?", a: "CLOCK" },
   { q: "What has a head and a tail but no body?", a: "COIN" },
@@ -297,15 +295,13 @@ const riddlesWithAnswers = [
   { q: "What word contains 26 letters but only three syllables?", a: "ALPHABET" },
   { q: "What tastes better than it smells?", a: "TONGUE" },
   { q: "What is easy to get into but hard to get out of?", a: "TROUBLE" },
-  { q: "I turn once, what is out will not get in. I turn again, what is in will not get 
-  out. What am I?", a: "KEY" },
+  { q: "I turn once, what is out will not get in. I turn again, what is in will not get out. What am I?", a: "KEY" },
   { q: "What kind of coat can only be put on when wet?", a: "PAINT" },
   { q: "What do you bury when it's alive and dig up when it's dead?", a: "PLANT" },
   { q: "People make me, save me, change me, and raise me. What am I?", a: "MONEY" },
   { q: "I have a head, a tail, but no legs. What am I?", a: "COIN" },
   { q: "What kind of room has no doors or windows?", a: "MUSHROOM" },
-  { q: "If you drop me, I'm sure to crack. Give me a smile and I'll smile back. What am 
-  I?", a: "MIRROR" },
+  { q: "If you drop me, I'm sure to crack. Give me a smile and I'll smile back. What am I?", a: "MIRROR" },
   { q: "What is so fragile that saying its name breaks it?", a: "SILENCE" },
   { q: "What has a ring but no finger?", a: "PHONE" },
   { q: "I am taken from a mine and shut in a wooden case. What am I?", a: "PENCIL" },
@@ -334,8 +330,7 @@ const riddlesWithAnswers = [
   { q: "I can be long or short. I can be grown or bought. What am I?", a: "HAIR" },
   { q: "What has a bark but no bite?", a: "TREE" },
   { q: "What gets broken without being held?", a: "PROMISE" },
-  { q: "I am a seed with three letters in my name. Take away two and I sound the same. 
-  What am I?", a: "PEA" },
+  { q: "I am a seed with three letters in my name. Take away two and I sound the same. What am I?", a: "PEA" },
   { q: "What goes from Z to A?", a: "ZEBRA" },
   { q: "What wears a cap but has no head?", a: "BOTTLE" },
   { q: "What do you answer even though it never asks you a question?", a: "PHONE" },
@@ -684,6 +679,19 @@ function App() {
 export default App
 ```
 
+## Other final updates:
+1. package.json Scripts
+  ```
+    "scripts": {
+      "dev": "vite",
+      "build": "vite",
+      "preview": "vite preview"
+    }
+  ```
+2. update Hardhat
+```
+  npm install --save-dev "@nomicfoundation/hardhat-chai-matchers@^2.0.0" "@nomicfoundation/hardhat-ethers@^3.0.0" "@nomicfoundation/hardhat-ignition-ethers@^0.15.0" "@nomicfoundation/hardhat-network-helpers@^1.0.0" "@nomicfoundation/hardhat-verify@^2.0.0" "@typechain/ethers-v6@^0.5.0" "@typechain/hardhat@^9.0.0" "@types/chai@^4.2.0" "@types/mocha@>=9.1.0" "chai@^4.2.0" "ethers@^6.4.0" "hardhat-gas-reporter@^1.0.8" "solidity-coverage@^0.8.1" "ts-node@>=8.0.0" "typechain@^8.3.0" "typescript@>=4.5.0"
+```
 ---
 
 ## 🚀 PART 5: Final Deployment

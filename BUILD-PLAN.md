@@ -118,6 +118,15 @@ Create `netlify.toml` in the root.
   status = 200
 ```
 
+### 6. Update Package  (`package.json`)
+```
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+```
+
 ---
 
 ## ⛓️ PART 2: Smart Contract (Hardhat)

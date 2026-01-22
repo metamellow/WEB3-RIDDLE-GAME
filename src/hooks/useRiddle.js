@@ -22,7 +22,7 @@ export function useRiddle() {
   })
 
   const { writeContract, data: hash, isPending } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess, isError } = useWaitForTransactionReceipt({ hash })
 
   const isChecking = isPending || isConfirming
 
@@ -61,6 +61,7 @@ export function useRiddle() {
     submitAnswer,
     isChecking,
     isSuccess,
+    isError,
     refetchAll
   }
 }

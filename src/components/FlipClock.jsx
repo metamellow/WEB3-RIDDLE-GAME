@@ -1,28 +1,7 @@
 import { useState, useEffect } from 'react'
 
 function FlipClock({ value, maxLength, isChecking, result }) {
-  const [checkingIndex, setCheckingIndex] = useState(-1)
-  
   const letters = value.padEnd(maxLength, ' ').split('')
-
-  // Animate checking sequence
-  useEffect(() => {
-    if (isChecking) {
-      setCheckingIndex(0)
-      const interval = setInterval(() => {
-        setCheckingIndex(prev => {
-          if (prev >= value.length - 1) {
-            return 0 // Loop back for continuous animation
-          }
-          return prev + 1
-        })
-      }, 100) // Much faster: 100ms per letter
-      
-      return () => clearInterval(interval)
-    } else {
-      setCheckingIndex(-1)
-    }
-  }, [isChecking, value.length])
 
   return (
     <div className="flip-clock">
@@ -32,9 +11,12 @@ function FlipClock({ value, maxLength, isChecking, result }) {
           className={`
             flip-letter
             ${i < value.length ? 'filled' : ''}
-            ${isChecking && i === checkingIndex ? 'flipping' : ''}
+            ${isChecking && i < value.length ? 'flipping' : ''}
             ${result && i < value.length ? result : ''}
           `}
+          style={{
+            animationDelay: isChecking ? `${i * 0.05}s` : '0s'
+          }}
         >
           <div className="flip-inner">
             <span>{letter}</span>

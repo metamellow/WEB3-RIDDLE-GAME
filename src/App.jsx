@@ -8,13 +8,6 @@ import WalletButton from './components/WalletButton'
 
 const MAX_LENGTH = 12
 
-// Sound assets
-const sounds = {
-  checking: new Audio('/sounds/checking.mp3'),
-  success: new Audio('/sounds/success.mp3'),
-  error: new Audio('/sounds/error.mp3'),
-}
-
 function App() {
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState(null) // 'correct' | 'wrong' | null
@@ -23,39 +16,47 @@ function App() {
   const { isConnected, address } = useAccount()
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
-  const { riddle, isActive, winner, submitAnswer, isChecking, isSuccess, refetchAll } = useRiddle()
+  const { riddle, isActive, winner, submitAnswer, isChecking, isSuccess, isError, refetchAll } = useRiddle()
 
-  const checkingSoundRef = useRef(sounds.checking)
+  const soundsRef = useRef({
+    checking: new Audio('/sounds/checking.mp3'),
+    success: new Audio('/sounds/success.mp3'),
+    error: new Audio('/sounds/error.mp3'),
+  })
 
   // Sound management
   useEffect(() => {
+    const s = soundsRef.current
     if (isChecking) {
-      checkingSoundRef.current.loop = true
-      checkingSoundRef.current.play().catch(console.error)
+      s.checking.loop = true
+      s.checking.play().catch(e => console.warn("Audio play blocked", e))
     } else {
-      checkingSoundRef.current.pause()
-      checkingSoundRef.current.currentTime = 0
+      s.checking.pause()
+      s.checking.currentTime = 0
     }
   }, [isChecking])
 
   // Trigger bot when riddle inactive
   useEffect(() => {
-    if (isActive === false && !isBotTriggering) {
+    if (isActive === false && !isBotTriggering && riddle) {
       setIsBotTriggering(true)
+      console.log("Triggering bot for new riddle...")
       fetch('/api/new-riddle')
-        .then(() => {
-          // Wait a bit for the chain to index the new riddle
+        .then(async (res) => {
+          const data = await res.json()
+          console.log("Bot response:", data)
+          // Wait for indexing
           setTimeout(() => {
             refetchAll()
             setIsBotTriggering(false)
-          }, 2000)
+          }, 3000)
         })
         .catch(err => {
-          console.error(err)
+          console.error("Bot error:", err)
           setIsBotTriggering(false)
         })
     }
-  }, [isActive, isBotTriggering, refetchAll])
+  }, [isActive, isBotTriggering, refetchAll, riddle])
 
   // Keyboard input
   useEffect(() => {
@@ -79,29 +80,30 @@ function App() {
 
   // Check result after transaction
   useEffect(() => {
-    if (isSuccess) {
-      // Small delay to ensure state is synced
-      setTimeout(async () => {
+    if (isSuccess || isError) {
+      const handleResult = async () => {
         const { winner: latestWinner } = await refetchAll()
+        const s = soundsRef.current
         
-        if (latestWinner && latestWinner.toLowerCase() === address?.toLowerCase()) {
+        if (isSuccess && latestWinner && latestWinner.toLowerCase() === address?.toLowerCase()) {
           setResult('correct')
-          sounds.success.play().catch(console.error)
+          s.success.play().catch(console.error)
           setTimeout(() => {
             setResult(null)
             setAnswer('')
           }, 3000)
         } else {
           setResult('wrong')
-          sounds.error.play().catch(console.error)
+          s.error.play().catch(console.error)
           setTimeout(() => {
             setResult(null)
             setAnswer('')
           }, 1500)
         }
-      }, 500)
+      }
+      handleResult()
     }
-  }, [isSuccess, address, refetchAll])
+  }, [isSuccess, isError, address, refetchAll])
 
   const handleSubmit = () => {
     if (!answer || !isConnected) return

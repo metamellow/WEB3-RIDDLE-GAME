@@ -39,14 +39,16 @@ export async function handler() {
       functionName: 'isActive'
     })
 
+    console.log("Current contract isActive status:", isActive)
+
     if (isActive) {
       return {
         statusCode: 200,
-        body: JSON.stringify({ message: 'Riddle active' })
+        body: JSON.stringify({ message: 'Riddle still active, no action needed' })
       }
     }
 
-    // Get next riddle
+    // Get next riddle index by counting RiddleSet events
     const logs = await publicClient.getLogs({
       address: CONTRACT_ADDRESS,
       event: {
@@ -54,11 +56,13 @@ export async function handler() {
         name: 'RiddleSet',
         inputs: [{ type: 'string', name: 'riddle' }]
       },
-      fromBlock: 'earliest'
+      fromBlock: 0n // Use BigInt for block numbers
     })
 
     const nextIndex = logs.length % riddles.length
     const next = riddles[nextIndex]
+    
+    console.log(`Setting next riddle (index ${nextIndex}): ${next.question}`)
 
     // Set new riddle
     const account = privateKeyToAccount(BOT_PRIVATE_KEY)

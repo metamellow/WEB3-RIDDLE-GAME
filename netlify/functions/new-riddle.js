@@ -6,7 +6,7 @@ import path from 'path'
 
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || process.env.VITE_CONTRACT_ADDRESS
 const BOT_PRIVATE_KEY = process.env.BOT_PRIVATE_KEY
-const RPC = process.env.SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com'
+const RPC = process.env.SEPOLIA_RPC_URL || 'https://0xrpc.io/sep'
 
 const ABI = [
   {

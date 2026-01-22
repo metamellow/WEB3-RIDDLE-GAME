@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
+import { useState, useEffect, useRef } from 'react'
+import { useAccount, useChainId, useSwitchChain } from 'wagmi'
+import { sepolia } from 'wagmi/chains'
 import { useRiddle } from './hooks/useRiddle'
 import FlipClock from './components/FlipClock'
 import RiddleDisplay from './components/RiddleDisplay'
@@ -7,19 +8,54 @@ import WalletButton from './components/WalletButton'
 
 const MAX_LENGTH = 12
 
+// Sound assets
+const sounds = {
+  checking: new Audio('/sounds/checking.mp3'),
+  success: new Audio('/sounds/success.mp3'),
+  error: new Audio('/sounds/error.mp3'),
+}
+
 function App() {
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState(null) // 'correct' | 'wrong' | null
+  const [isBotTriggering, setIsBotTriggering] = useState(false)
   
-  const { isConnected } = useAccount()
-  const { riddle, isActive, winner, submitAnswer, isChecking, isSuccess } = useRiddle()
+  const { isConnected, address } = useAccount()
+  const chainId = useChainId()
+  const { switchChain } = useSwitchChain()
+  const { riddle, isActive, winner, submitAnswer, isChecking, isSuccess, refetchAll } = useRiddle()
+
+  const checkingSoundRef = useRef(sounds.checking)
+
+  // Sound management
+  useEffect(() => {
+    if (isChecking) {
+      checkingSoundRef.current.loop = true
+      checkingSoundRef.current.play().catch(console.error)
+    } else {
+      checkingSoundRef.current.pause()
+      checkingSoundRef.current.currentTime = 0
+    }
+  }, [isChecking])
 
   // Trigger bot when riddle inactive
   useEffect(() => {
-    if (isActive === false) {
-      fetch('/api/new-riddle').catch(console.error)
+    if (isActive === false && !isBotTriggering) {
+      setIsBotTriggering(true)
+      fetch('/api/new-riddle')
+        .then(() => {
+          // Wait a bit for the chain to index the new riddle
+          setTimeout(() => {
+            refetchAll()
+            setIsBotTriggering(false)
+          }, 2000)
+        })
+        .catch(err => {
+          console.error(err)
+          setIsBotTriggering(false)
+        })
     }
-  }, [isActive])
+  }, [isActive, isBotTriggering, refetchAll])
 
   // Keyboard input
   useEffect(() => {
@@ -44,26 +80,35 @@ function App() {
   // Check result after transaction
   useEffect(() => {
     if (isSuccess) {
-      setTimeout(() => {
-        if (winner && winner !== '0x0000000000000000000000000000000000000000') {
+      // Small delay to ensure state is synced
+      setTimeout(async () => {
+        const { winner: latestWinner } = await refetchAll()
+        
+        if (latestWinner && latestWinner.toLowerCase() === address?.toLowerCase()) {
           setResult('correct')
+          sounds.success.play().catch(console.error)
           setTimeout(() => {
             setResult(null)
             setAnswer('')
           }, 3000)
         } else {
           setResult('wrong')
+          sounds.error.play().catch(console.error)
           setTimeout(() => {
             setResult(null)
             setAnswer('')
           }, 1500)
         }
-      }, 1000)
+      }, 500)
     }
-  }, [isSuccess, winner])
+  }, [isSuccess, address, refetchAll])
 
   const handleSubmit = () => {
     if (!answer || !isConnected) return
+    if (chainId !== sepolia.id) {
+      switchChain({ chainId: sepolia.id })
+      return
+    }
     submitAnswer(answer)
   }
 
@@ -74,7 +119,7 @@ function App() {
       <div className="container">
         <h1 className="title">RIDDLE_TERMINAL</h1>
         
-        <RiddleDisplay text={riddle || 'LOADING...'} />
+        <RiddleDisplay text={riddle || (isBotTriggering ? 'GENERATING NEW RIDDLE...' : 'LOADING...')} />
         
         <FlipClock 
           value={answer}
@@ -93,10 +138,10 @@ function App() {
           {isConnected ? (
             <button 
               onClick={handleSubmit}
-              disabled={!answer || isChecking || result}
+              disabled={!answer || isChecking || result || isBotTriggering}
               className="submit-btn"
             >
-              {isChecking ? 'CHECKING...' : 'SUBMIT'}
+              {isChecking ? 'CHECKING...' : isBotTriggering ? 'WAIT...' : 'SUBMIT'}
             </button>
           ) : (
             <WalletButton />

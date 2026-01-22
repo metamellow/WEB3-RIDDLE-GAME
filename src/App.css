@@ -107,7 +107,7 @@ body {
 
 /* FLIP ANIMATION (on checking) */
 .flip-letter.flipping .flip-inner {
-  animation: flip 0.6s ease-in-out;
+  animation: flip 0.2s ease-in-out;
 }
 
 @keyframes flip {

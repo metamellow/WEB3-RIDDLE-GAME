@@ -12,12 +12,11 @@ function FlipClock({ value, maxLength, isChecking, result }) {
       const interval = setInterval(() => {
         setCheckingIndex(prev => {
           if (prev >= value.length - 1) {
-            clearInterval(interval)
-            return prev
+            return 0 // Loop back for continuous animation
           }
           return prev + 1
         })
-      }, 300) // Each letter flips every 300ms
+      }, 100) // Much faster: 100ms per letter
       
       return () => clearInterval(interval)
     } else {

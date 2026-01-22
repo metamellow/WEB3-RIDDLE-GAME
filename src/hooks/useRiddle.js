@@ -45,6 +45,15 @@ export function useRiddle() {
     })
   }
 
+  const refetchAll = async () => {
+    const [r, a, w] = await Promise.all([
+      refetchRiddle(),
+      refetchActive(),
+      refetchWinner()
+    ])
+    return { riddle: r.data, isActive: a.data, winner: w.data }
+  }
+
   return {
     riddle,
     isActive,
@@ -52,5 +61,6 @@ export function useRiddle() {
     submitAnswer,
     isChecking,
     isSuccess,
+    refetchAll
   }
 }

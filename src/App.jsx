@@ -13,10 +13,11 @@ function App() {
   const [result, setResult] = useState(null) // 'correct' | 'wrong' | null
   const [isBotTriggering, setIsBotTriggering] = useState(false)
   
+  const processedHashRef = useRef(null)
   const { isConnected, address } = useAccount()
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
-  const { riddle, isActive, winner, submitAnswer, isChecking, isSuccess, isError, refetchAll } = useRiddle()
+  const { riddle, isActive, winner, submitAnswer, isChecking, isSuccess, isError, hash, refetchAll } = useRiddle()
 
   const soundsRef = useRef({
     checking: new Audio('/sounds/checking.mp3'),
@@ -29,6 +30,7 @@ function App() {
     const s = soundsRef.current
     if (isChecking) {
       s.checking.loop = true
+      s.checking.currentTime = 0
       s.checking.play().catch(e => console.warn("Audio play blocked", e))
     } else {
       s.checking.pause()
@@ -88,14 +90,19 @@ function App() {
 
   // Check result after transaction
   useEffect(() => {
-    if (isSuccess || isError) {
+    if ((isSuccess || isError) && hash && processedHashRef.current !== hash) {
+      processedHashRef.current = hash
+      
       const handleResult = async () => {
         const { winner: latestWinner } = await refetchAll()
         const s = soundsRef.current
         
+        // Stop checking sound immediately
+        s.checking.pause()
+        s.checking.currentTime = 0
+
         if (isSuccess && latestWinner && latestWinner.toLowerCase() === address?.toLowerCase()) {
           setResult('correct')
-          // Play success sound once
           s.success.currentTime = 0
           s.success.play().catch(console.error)
           
@@ -105,7 +112,6 @@ function App() {
           }, 3000)
         } else {
           setResult('wrong')
-          // Play error sound once
           s.error.currentTime = 0
           s.error.play().catch(console.error)
           
@@ -117,7 +123,7 @@ function App() {
       }
       handleResult()
     }
-  }, [isSuccess, isError, address, refetchAll])
+  }, [isSuccess, isError, hash, address, refetchAll])
 
   const handleSubmit = () => {
     if (!answer || !isConnected) return

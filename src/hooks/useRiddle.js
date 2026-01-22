@@ -1,5 +1,5 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../config/contract'
 
 export function useRiddle() {
@@ -26,15 +26,22 @@ export function useRiddle() {
 
   const isChecking = isPending || isConfirming
 
+  const refetchAll = useCallback(async () => {
+    const [r, a, w] = await Promise.all([
+      refetchRiddle(),
+      refetchActive(),
+      refetchWinner()
+    ])
+    return { riddle: r.data, isActive: a.data, winner: w.data }
+  }, [refetchRiddle, refetchActive, refetchWinner])
+
   useEffect(() => {
     if (isSuccess) {
       setTimeout(() => {
-        refetchRiddle()
-        refetchActive()
-        refetchWinner()
+        refetchAll()
       }, 1500)
     }
-  }, [isSuccess])
+  }, [isSuccess, refetchAll])
 
   const submitAnswer = (answer) => {
     writeContract({
@@ -45,15 +52,6 @@ export function useRiddle() {
     })
   }
 
-  const refetchAll = async () => {
-    const [r, a, w] = await Promise.all([
-      refetchRiddle(),
-      refetchActive(),
-      refetchWinner()
-    ])
-    return { riddle: r.data, isActive: a.data, winner: w.data }
-  }
-
   return {
     riddle,
     isActive,
@@ -62,6 +60,7 @@ export function useRiddle() {
     isChecking,
     isSuccess,
     isError,
+    hash,
     refetchAll
   }
 }
